@@ -9,7 +9,7 @@ from google.protobuf.json_format import MessageToDict, Parse
 import feast
 from feast import proto_json
 from feast.protos.feast.serving.ServingService_pb2 import GetOnlineFeaturesRequest
-
+from feast import FeatureStore
 
 def get_app(store: "feast.FeatureStore"):
     proto_json.patch()
@@ -18,7 +18,12 @@ def get_app(store: "feast.FeatureStore"):
 
     async def get_body(request: Request):
         return await request.body()
-
+    @app.get("/refresh-features")
+    def refresh_features(repo_path:str):
+        global store
+        store = FeatureStore(repo_path=repo_path)
+        return {"store got updated"}
+    
     @app.post("/get-online-features")
     def get_online_features(body=Depends(get_body)):
         try:
